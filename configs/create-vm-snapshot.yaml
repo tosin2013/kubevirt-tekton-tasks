@@ -1,0 +1,4 @@
+task_name: create-vm-snapshot
+task_category: create-vm-snapshot
+main_image: quay.io/kubevirt/tekton-tasks
+nice_name: create VM snapshot
