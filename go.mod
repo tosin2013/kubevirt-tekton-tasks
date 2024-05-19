@@ -41,6 +41,7 @@ replace (
 require (
 	github.com/alexflint/go-arg v1.5.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/kubevirt/kubevirt-tekton-tasks v0.20.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
@@ -121,7 +122,6 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/kubernetes-csi/external-snapshotter/client/v4 v4.2.0 // indirect
-	github.com/kubevirt/kubevirt-tekton-tasks v0.20.0 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20230907030200-6d76a0f91e1e // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
