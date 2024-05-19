@@ -9,7 +9,7 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/output"
 	res "github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/results"
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
-	createvmsnapshot "github.com/tosin2013/kubevirt-tekton-tasks/modules/create-vm-snapshot/pkg"
+	. "github.com/tosin2013/kubevirt-tekton-tasks/modules/create-vm-snapshot/pkg/constants"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

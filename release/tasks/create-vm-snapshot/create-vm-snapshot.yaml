@@ -21,7 +21,7 @@ spec:
       default: "json"
   steps:
     - name: create-snapshot
-      image: docker.io/your-docker-image:latest
+      image: "quay.io/takinosh/tekton-tasks:v0.20.0"
       script: |
         #!/bin/sh
         /usr/local/bin/create-vm-snapshot \
