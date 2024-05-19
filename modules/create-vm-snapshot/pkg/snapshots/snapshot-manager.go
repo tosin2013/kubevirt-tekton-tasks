@@ -1,8 +1,8 @@
 package snapshots
 
 import (
-	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	"github.com/tosin2013/kubevirt-tekton-tasks/modules/create-vm-snapshot/pkg/utils/parse"
+	"github.com/tosin2013/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 )
 
 type SnapshotManager struct {

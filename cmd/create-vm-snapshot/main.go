@@ -11,18 +11,25 @@ import (
 	"github.com/kubevirt/kubevirt-tekton-tasks/modules/shared/pkg/zerrors"
 	. "github.com/tosin2013/kubevirt-tekton-tasks/modules/create-vm-snapshot/pkg/constants"
 	createvmsnapshot "github.com/tosin2013/kubevirt-tekton-tasks/modules/create-vm-snapshot/pkg/snapshots"
+	"github.com/tosin2013/kubevirt-tekton-tasks/modules/create-vm-snapshot/pkg/utils/parse"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	defer exit.HandleExit()
+    defer exit.HandleExit()
 
-	cliOptions := &CLIOptions{}
-	goarg.MustParse(cliOptions)
+    cliOptions := &parse.CLIOptions{}
+    goarg.MustParse(cliOptions)
 
+    // Convert string to zapcore.Level
+    var logLevel zapcore.Level
+    if err := logLevel.UnmarshalText([]byte(cliOptions.GetDebugLevel())); err != nil {
+        exit.ExitOrDieFromError(InvalidCLIInputExitCode, err)
+    }
+	
 	// Initialize logger with the specified debug level
-	logger := log.InitLogger(zapcore.Level(cliOptions.GetDebugLevel()))
+	logger := log.InitLogger(logLevel)
 	defer logger.Sync()
 
 	// Initialize CLI options
@@ -59,7 +66,7 @@ func main() {
 	}
 
 	// Pretty print the snapshot details
-	output.PrettyPrint(newSnapshot, cliOptions.Output)
+	output.PrettyPrint(newSnapshot, output.OutputType(cliOptions.Output))
 }
 
 // CLIOptions represents the command-line options
