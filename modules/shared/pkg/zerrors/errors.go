@@ -30,3 +30,7 @@ func IsStatusError(err error, allowedStatusCodes ...int32) bool {
 
 	return false
 }
+
+func New(message string) error {
+    return errors.New(message)
+}
