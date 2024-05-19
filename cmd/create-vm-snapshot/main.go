@@ -17,17 +17,17 @@ import (
 )
 
 func main() {
-    defer exit.HandleExit()
+	defer exit.HandleExit()
 
-    cliOptions := &parse.CLIOptions{}
-    goarg.MustParse(cliOptions)
+	cliOptions := &parse.CLIOptions{}
+	goarg.MustParse(cliOptions)
 
-    // Convert string to zapcore.Level
-    var logLevel zapcore.Level
-    if err := logLevel.UnmarshalText([]byte(cliOptions.GetDebugLevel())); err != nil {
-        exit.ExitOrDieFromError(InvalidCLIInputExitCode, err)
-    }
-	
+	// Convert string to zapcore.Level
+	var logLevel zapcore.Level
+	if err := logLevel.UnmarshalText([]byte(cliOptions.GetDebugLevel())); err != nil {
+		exit.ExitOrDieFromError(InvalidCLIInputExitCode, err)
+	}
+
 	// Initialize logger with the specified debug level
 	logger := log.InitLogger(logLevel)
 	defer logger.Sync()
@@ -69,22 +69,3 @@ func main() {
 	output.PrettyPrint(newSnapshot, output.OutputType(cliOptions.Output))
 }
 
-// CLIOptions represents the command-line options
-type CLIOptions struct {
-	DebugLevel string `arg:"-d,--debug" help:"Debug level"`
-	VMName     string `arg:"-v,--vm-name" help:"Name of the VM to snapshot" required:"true"`
-	Output     string `arg:"-o,--output" help:"Output format (e.g., json, yaml)" default:"json"`
-}
-
-// GetDebugLevel returns the debug level as a string
-func (cli *CLIOptions) GetDebugLevel() string {
-	return cli.DebugLevel
-}
-
-// Init initializes CLI options
-func (cli *CLIOptions) Init() error {
-	// Additional initialization if needed
-	return nil
-}
-
-// Assuming NewSnapshotManager and CreateSnapshot are implemented in createvmsnapshot package

@@ -54,6 +54,7 @@ require (
 	k8s.io/apimachinery v0.29.3
 	k8s.io/cli-runtime v0.24.2
 	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 	knative.dev/pkg v0.0.0-20240318073042-db6f3b074e8c
 	kubevirt.io/api v1.2.0
 	kubevirt.io/client-go v1.2.0
@@ -179,7 +180,6 @@ require (
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-aggregator v0.29.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
-	k8s.io/utils v0.0.0-20240310230437-4693a0247e57 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.17.1 // indirect
