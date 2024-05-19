@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  generateName: create-vm-snapshot-taskrun-
+spec:
+  taskRef:
+    name: create-vm-snapshot
+  params:
+    - name: vmName
+      value: "example-vm"
+    - name: debugLevel
+      value: "info"
+    - name: output
+      value: "json"

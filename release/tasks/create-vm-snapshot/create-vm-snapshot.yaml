@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-vm-snapshot
+  labels:
+    app: create-vm-snapshot
+spec:
+  description: >
+    A task to create a snapshot of a virtual machine using the create-vm-snapshot tool.
+  params:
+    - name: vmName
+      type: string
+      description: The name of the VM to snapshot
+    - name: debugLevel
+      type: string
+      description: The debug level for logging
+      default: "info"
+    - name: output
+      type: string
+      description: The output format (e.g., json, yaml)
+      default: "json"
+  steps:
+    - name: create-snapshot
+      image: docker.io/your-docker-image:latest
+      script: |
+        #!/bin/sh
+        /usr/local/bin/create-vm-snapshot \
+          --vm-name=$(params.vmName) \
+          --debug=$(params.debugLevel) \
+          --output=$(params.output)
+  results:
+    - name: snapshotName
+      description: The name of the created snapshot
+    - name: vmName
+      description: The name of the VM for which the snapshot was created
+    - name: creationTime
+      description: The creation time of the snapshot
