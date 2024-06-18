@@ -16,7 +16,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.20.0
+    app.kubernetes.io/version: v0.21.0
   name: windows-efi-installer
 spec:
   description: >-
@@ -28,6 +28,13 @@ spec:
     - description: Download URL to Windows 11 or server 2022 installation ISO (English United States x64 version is needed). You can follow https://www.microsoft.com/en-us/software-download/windows11 or https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022 to get one.
       name: winImageDownloadURL
       type: string
+    - name: acceptEula
+      description: By setting this parameter, you are agreeing to the applicable Microsoft end user license agreement(s) for each deployment or installation for the Microsoft product(s).
+      type: string
+    - name: autounattendXMLConfigMapsURL
+      description: Download URL to ConfigMaps with Windows autounattend.xml file. ConfigMap is used for automated installation of Windows from ISO file. Specify the correct ConfigMap name in `autounattendConfigMapName` parameter.
+      type: string
+      default: https://raw.githubusercontent.com/kubevirt/kubevirt-tekton-tasks/main/release/pipelines/windows-efi-installer/configmaps/windows-efi-installer-configmaps.yaml
     - name: instanceTypeName
       type: string
       description: Name of VirtualMachineClusterInstancetype object
@@ -39,7 +46,7 @@ spec:
     - name: preferenceName
       type: string
       description: Name of VirtualMachineClusterPreference object
-      default: windows.11
+      default: windows.11.virtio
     - name: virtualMachinePreferenceKind
       type: string
       description: Kind of virtualMachinePreference object
@@ -61,6 +68,34 @@ spec:
       name: isoDVName
       type: string
   tasks:
+    - name: import-autounattend-configmaps
+      params:
+        - name: SCRIPT
+          value: |-
+            if [ "$(params.acceptEula)" ]; then
+              curl $(params.autounattendXMLConfigMapsURL) | \
+              sed "s/<AcceptEula>false<\/AcceptEula>/<AcceptEula>true<\/AcceptEula>/g" | \
+              oc apply -f - 
+            else
+              echo "Microsoft Eula is not accepted"
+              echo "Exiting"
+              exit 1
+            fi
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
     - name: import-win-iso
       params:
         - name: manifest
@@ -94,7 +129,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.20.0
+            value: v0.21.0
     - name: modify-windows-iso-file
       params:
         - name: pvcName
@@ -114,8 +149,10 @@ spec:
           - name: name
             value: modify-windows-iso-file
           - name: version
-            value: v0.20.0
+            value: v0.21.0
     - name: create-vm-root-disk
+      runAfter:
+        - import-autounattend-configmaps
       taskRef:
         resolver: hub
         params:
@@ -128,7 +165,7 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.20.0
+            value: v0.21.0
       params:
         - name: manifest
           value: |-
@@ -217,7 +254,7 @@ spec:
           - name: name
             value: create-vm-from-manifest
           - name: version
-            value: v0.20.0
+            value: v0.21.0
     - name: wait-for-vmi-status
       params:
         - name: vmiName
@@ -242,8 +279,46 @@ spec:
           - name: name
             value: wait-for-vmi-status
           - name: version
-            value: v0.20.0
+            value: v0.21.0
       timeout: 2h0m0s
+    - name: create-datasource-root-disk
+      runAfter:
+        - wait-for-vmi-status
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: kubevirt-tekton-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: modify-data-object
+          - name: version
+            value: v0.21.0
+      params:
+        - name: manifest
+          value: |-
+            apiVersion: cdi.kubevirt.io/v1beta1
+            kind: DataSource
+            metadata:
+              labels:
+                "instancetype.kubevirt.io/default-instancetype-kind": $(params.instanceTypeKind)
+                "instancetype.kubevirt.io/default-instancetype": $(params.instanceTypeName)
+                "instancetype.kubevirt.io/default-preference-kind": $(params.virtualMachinePreferenceKind)
+                "instancetype.kubevirt.io/default-preference": $(params.preferenceName)
+              name: $(tasks.create-vm-root-disk.results.name)
+              namespace: $(tasks.create-vm-root-disk.results.namespace)
+            spec:
+              source:
+                pvc:
+                  name: $(tasks.create-vm-root-disk.results.name)
+                  namespace: $(tasks.create-vm-root-disk.results.namespace)
+        - name: waitForSuccess
+          value: false
+        - name: allowReplace
+          value: true
   finally:
     - name: cleanup-vm
       params:
@@ -265,7 +340,7 @@ spec:
           - name: name
             value: cleanup-vm
           - name: version
-            value: v0.20.0
+            value: v0.21.0
       timeout: 10m0s
     - name: delete-imported-iso
       params:
@@ -289,7 +364,26 @@ spec:
           - name: name
             value: modify-data-object
           - name: version
-            value: v0.20.0
+            value: v0.21.0
+    - name: delete-imported-configmaps
+      params:
+        - name: SCRIPT
+          value: oc delete -f $(params.autounattendXMLConfigMapsURL)
+        - name: VERSION
+          value: latest
+      taskRef:
+        resolver: hub
+        params:
+          - name: catalog
+            value: tekton-catalog-tasks
+          - name: type
+            value: artifact
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: version
+            value: 0.2.0
   results:
     - description: Name of the created base DataVolume
       name: baseDvName
