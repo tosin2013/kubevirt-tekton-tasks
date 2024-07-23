@@ -17,7 +17,7 @@ metadata:
     artifacthub.io/category: integration-delivery
     tekton.dev/deprecated: "true"
   labels:
-    app.kubernetes.io/version: v0.21.0
+    app.kubernetes.io/version: v0.22.0
   name: create-vm-from-template
 spec:
   description: >-
@@ -48,6 +48,10 @@ spec:
       description: Set runStrategy to VM. If runStrategy is set, vm.spec.running attribute is set to nil.
       default: ""
       type: string
+    - name: setOwnerReference
+      description: Set owner reference to the new object created by the task run pod. Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of a VM that was created.
@@ -55,7 +59,7 @@ spec:
       description: The namespace of a VM that was created.
   steps:
     - name: createvm
-      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.22.0"
       command:
         - create-vm
       args:
@@ -71,5 +75,15 @@ spec:
           value: $(params.vmNamespace)
         - name: START_VM
           value: $(params.startVM)
+        - name: SET_OWNER_REFERENCE
+          value: $(params.setOwnerReference)
         - name: RUN_STRATEGY
           value: $(params.runStrategy)
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

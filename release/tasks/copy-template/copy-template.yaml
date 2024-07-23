@@ -17,7 +17,7 @@ metadata:
       - url: https://kubevirt.io/
     artifacthub.io/category: integration-delivery
   labels:
-    app.kubernetes.io/version: v0.21.0
+    app.kubernetes.io/version: v0.22.0
   name: copy-template
 spec:
   description: >-
@@ -44,6 +44,10 @@ spec:
       description: Allow replacing already existing template (same combination name/namespace). Allowed values true/false
       type: string
       default: "false"
+    - name: setOwnerReference
+      description: Set owner reference to the new object created by the task run pod. Allowed values true/false
+      type: string
+      default: "false"
   results:
     - name: name
       description: The name of a template that was created.
@@ -51,7 +55,7 @@ spec:
       description: The namespace of a template that was created.
   steps:
     - name: copytemplate
-      image: "quay.io/kubevirt/tekton-tasks:v0.21.0"
+      image: "quay.io/kubevirt/tekton-tasks:v0.22.0"
       command:
         - copy-template
       args:
@@ -67,3 +71,13 @@ spec:
           value: $(params.targetTemplateNamespace)
         - name: ALLOW_REPLACE
           value: $(params.allowReplace)
+        - name: SET_OWNER_REFERENCE
+          value: $(params.setOwnerReference)
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

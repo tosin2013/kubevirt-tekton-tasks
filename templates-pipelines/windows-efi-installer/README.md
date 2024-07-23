@@ -93,10 +93,10 @@ oc create -f - <<EOF
 
 ## Cancelling/Deleting PipelineRuns
 
-When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster and then they have to be deleted manually. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataSource/DataVolume/PVC.
+When running the example Pipelines, they create temporary objects (DataVolumes, VirtualMachines, etc.). Each Pipeline has its own clean up system which should keep the cluster clean from leftovers. In case user hard deletes or cancels running PipelineRun, the PipelineRun will not clean temporary objects and objects will stay in the cluster. To prevent this behaviour, cancel the [PipelineRun gracefully](https://tekton.dev/docs/pipelines/pipelineruns/#gracefully-cancelling-a-pipelinerun). It triggers special Tasks, which remove temporary objects and keep only result DataSource/DataVolume/PVC.
+Each object created by the Pipeline has OwnerReference to the Pod which created them (result DataSource and DataVolume do not have it). In the case that the clean up steps are not triggered, by deleting the PipelineRun all leftover objects created by the Pipeline will be deleted.
 
-windows-efi-installer Pipeline generates for each PipelineRun new source DataVolume which contains imported ISO file. This DataVolume has generated name and is deleted after Pipeline succeeds. However, the created PVC will stay in cluster, but it will have terminating state. It will wait, until pipelinRun is deleted. This behaviour is caused by a fact, that PVC is mounted into modify-windows-iso TaskRun pod and PVC can be deleted only when the pod does not 
-exist.
+windows-efi-installer Pipeline generates for each PipelineRun new source DataVolume which contains imported ISO file. This DataVolume has generated name and is deleted after Pipeline succeeds. However, the created PVC will stay in cluster, but it will have terminating state. It will wait, until pipelinRun is deleted. This behaviour is caused by a fact, that PVC is mounted into modify-windows-iso TaskRun pod and PVC can be deleted only when the pod does not exist.
 
 #### Obtaining a download URL in an automated way
 
@@ -126,3 +126,6 @@ spec:
           fsGroup: 107
           runAsUser: 107
 ```
+- Windows preferences in older KubeVirt versions might still use Bios mode. In that case, set the `useBiosMode` parameter 
+to `true`. This will skip the `modify-windows-iso-file` task. In case the the Windows preference uses Bios and the 
+`useBiosMode` parameter is not set to true, the Windows VM will not work.

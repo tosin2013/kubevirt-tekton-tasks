@@ -11,6 +11,7 @@ This task modifies a data object (DataVolumes or DataSources).
 - **deleteObject**: Set to `true` or `false` if task should delete the specified DataVolume, DataSource or PersistentVolumeClaim. If set to 'true' the ds/dv/pvc will be deleted and all other parameters are ignored.
 - **deleteObjectKind**: Kind of the data object to delete. This parameter is used only for Delete operation.
 - **deleteObjectName**: Name of the data object to delete. This parameter is used only for Delete operation.
+- **setOwnerReference**: Set owner reference to the new object created by the task run pod. Allowed values true/false
   
 ### Results
 
@@ -42,7 +43,7 @@ spec:
         -   name: name
             value: modify-data-object
         -   name: version
-            value: v0.21.0
+            value: v0.22.0
         resolver: hub
 ```
 

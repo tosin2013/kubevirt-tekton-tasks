@@ -20,12 +20,12 @@ metadata:
   name: windows-efi-installer
 spec:
   description: >-
-    This pipeline installs Windows 11/2k22 into a new DataVolume. Then the 
+    This pipeline installs Windows 10/11/2k22 into a new DataVolume. Then the 
     DataVolume is suitable to be used as a default boot source or golden image 
-    for Windows 11/2k22 VMs. Different OS versions requires different 
+    for Windows 10/11/2k22 VMs. Different OS versions requires different 
     customizeConfigMapName parameter with unattend.xml.
   params:
-    - description: Download URL to Windows 11 or server 2022 installation ISO (English United States x64 version is needed). You can follow https://www.microsoft.com/en-us/software-download/windows11 or https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022 to get one.
+    - description: Download URL to Windows 10, 11 or server 2022 installation ISO (English United States x64 version is needed). You can follow https://www.microsoft.com/en-us/software-download/windows11 or https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022 to get one.
       name: winImageDownloadURL
       type: string
     - name: acceptEula
@@ -52,7 +52,7 @@ spec:
       description: Kind of virtualMachinePreference object
       default: VirtualMachineClusterPreference
     - default: windows11-autounattend
-      description: Name of the ConfigMap containing the sysprep configuration files (autounattend.xml, etc.). For example windows11-autounattend or windows2022-autounattend. It is possible to provide customize ConfigMaps created by the user too.
+      description: Name of the ConfigMap containing the sysprep configuration files (autounattend.xml, etc.). For example windows11-autounattend, windows10-efi-autounattend or windows2022-autounattend. It is possible to provide customize ConfigMaps created by the user too.
       name: autounattendConfigMapName
       type: string
     - default: quay.io/kubevirt/virtio-container-disk:v1.2.0
@@ -66,6 +66,10 @@ spec:
     - default: win11
       description: Name of Windows ISO datavolume
       name: isoDVName
+      type: string
+    - default: false
+      description: In older preferences, Windows 10 preference might still use Bios. In that case the step modify-windows-iso-file should not run. If the preference uses Bios, set this parameter to true.
+      name: useBiosMode
       type: string
   tasks:
     - name: import-autounattend-configmaps
@@ -117,6 +121,8 @@ spec:
           value: false
         - name: allowReplace
           value: true
+        - name: setOwnerReference
+          value: true
       taskRef:
 {% if use_resolver_in_manifests %}
         resolver: hub
@@ -136,6 +142,10 @@ spec:
         name: modify-data-object
 {% endif %}
     - name: modify-windows-iso-file
+      when:
+        - input: "$(params.useBiosMode)"
+          operator: in
+          values: ["false"]
       params:
         - name: pvcName
           value: $(tasks.import-win-iso.results.name)
@@ -208,6 +218,8 @@ spec:
       params:
         - name: runStrategy
           value: RerunOnFailure
+        - name: setOwnerReference
+          value: true
         - name: manifest
           value: |-
             apiVersion: kubevirt.io/v1
